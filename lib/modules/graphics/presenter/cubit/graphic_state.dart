@@ -5,13 +5,9 @@ abstract class GraphicState {}
 class GraphicInitial extends GraphicState {}
 
 class GraphicLoaded extends GraphicState {
-  final RandomChartData lineChartData;
-  final LabelLayoutStrategy labelLayoutStrategy;
+  final List<FlSpot> spots;
 
-  GraphicLoaded({
-    required this.lineChartData,
-    required this.labelLayoutStrategy,
-  });
+  GraphicLoaded({required this.spots});
 }
 
 class GraphicSelected extends GraphicState {

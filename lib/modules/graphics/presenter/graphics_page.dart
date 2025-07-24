@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_charts/flutter_charts.dart';
 import 'package:get_it/get_it.dart';
 
-import '../../../_exports.dart';
+import '../../../lucas_batista_test_exports.dart';
 
 class GraphicsPage extends StatefulWidget {
   const GraphicsPage({super.key});
@@ -15,21 +14,14 @@ class GraphicsPage extends StatefulWidget {
 class _GraphicsPageState extends State<GraphicsPage> {
   final GetIt getIt = GetIt.instance;
   late GraphicCubit _graphicCubit;
-  late PositionGraphicCubit _positionGraphicCubit;
-  bool _isDrawing = false;
-  Path _drawnPath = Path();
-  final List<Offset> _points = [];
+  late SelectionDataCubit _selectionDataCubit;
 
   @override
   void initState() {
     super.initState();
-    getIt.registerLazySingleton<PositionGraphicCubit>(
-      () => PositionGraphicCubit(),
-    );
-    _positionGraphicCubit = getIt<PositionGraphicCubit>();
-    getIt.registerLazySingleton<GraphicCubit>(
-      () => GraphicCubit(_positionGraphicCubit),
-    );
+    getIt.registerLazySingleton<SelectionDataCubit>(() => SelectionDataCubit());
+    _selectionDataCubit = getIt<SelectionDataCubit>();
+    getIt.registerLazySingleton<GraphicCubit>(() => GraphicCubit());
     _graphicCubit = getIt<GraphicCubit>();
     _graphicCubit.init();
   }
@@ -46,85 +38,18 @@ class _GraphicsPageState extends State<GraphicsPage> {
               if (state is GraphicLoaded) {
                 return Stack(
                   children: [
-                    SizedBox(
-                      height: 600,
-                      width: MediaQuery.of(context).size.width,
-                      child: LineChart(
-                        painter: LineChartPainter(
-                          lineChartContainer: LineChartTopContainer(
-                            chartData: state.lineChartData,
-                            xContainerLabelLayoutStrategy:
-                                state.labelLayoutStrategy,
-                          ),
-                        ),
-                      ),
+                    SelectableChart(
+                      spots: state.spots,
+                      selectionDataCubit: _selectionDataCubit,
                     ),
-                    SizedBox(
-                      height: 600,
-                      width: MediaQuery.of(context).size.width,
-                      child: GestureDetector(
-                        onPanStart: (details) {
-                          setState(() {
-                            _isDrawing = true;
-                            _drawnPath.moveTo(
-                              details.localPosition.dx,
-                              details.localPosition.dy,
-                            );
-                            _points.add(details.localPosition);
-                          });
-                        },
-                        onPanUpdate: (details) {
-                          setState(() {
-                            _drawnPath.lineTo(
-                              details.localPosition.dx,
-                              details.localPosition.dy,
-                            );
-                            _points.add(details.localPosition);
-                          });
-                        },
-                        onPanEnd: (details) {
-                          setState(() => _isDrawing = false);
-                          // Enviar path para o Cubit processar
-                          final renderBox =
-                              context.findRenderObject() as RenderBox;
-                          _graphicCubit.selectPointsInPath(
-                            path: _drawnPath,
-                            chartSize: renderBox.size,
-                          );
-                          _drawnPath.reset();
-                          _points.clear();
-                        },
-                        child: CustomPaint(
-                          painter: DrawingPainter(_drawnPath),
-                          size: Size.infinite,
-                        ),
-                      ),
-                    ),
-                    BlocBuilder<PositionGraphicCubit, PositionGraphicState>(
-                      bloc: _positionGraphicCubit,
-                      builder: (context, state) {
-                        if (state is PositionGraphicSelected) {
-                          return Positioned(
-                            bottom: 10,
-                            left: 10,
-                            child: Container(
-                              padding: EdgeInsets.all(8),
-                              color: Colors.white,
-                              child: Text(
-                                "Selecionados: ${state.selectedPoints.length}",
-                              ),
-                            ),
-                          );
-                        }
-                        return SizedBox.shrink();
-                      },
-                    ),
+                    SelectedArea(selectionDataCubit: _selectionDataCubit),
                   ],
                 );
               }
               return const SizedBox.shrink();
             },
           ),
+          SelectedDataTable(selectionDataCubit: _selectionDataCubit),
         ],
       ),
     );

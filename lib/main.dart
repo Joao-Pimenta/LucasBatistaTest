@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '_exports.dart';
+import 'lucas_batista_test_exports.dart';
 
 void main() {
   runApp(const MyApp());

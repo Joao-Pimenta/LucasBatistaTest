@@ -11,7 +11,7 @@ e o projeto está seguindo o versionamento conforme [Semantic Versioning](https:
 
 - Adicionado gráfico de linha
 - Alterado package de gráficos para fl_chart
-- Criado função que atravéz do desenho gera um quadrado e trás os dados selecionados
+- Criado fluxo que atravéz do desenho gera um quadrado e trás os dados selecionados
 
 ## [1.0.0] - 23/07/2025
 
